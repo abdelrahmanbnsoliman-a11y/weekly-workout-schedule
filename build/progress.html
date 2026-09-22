@@ -1,0 +1,29 @@
+
+<section id="view-progress" role="tabpanel" aria-labelledby="tab-progress" hidden>
+  <p class="sub">Set a target for the next few weeks, then tick exercises off in Training as you go. A day counts as a workout once you've ticked at least half of that session, or when you click the day on the calendar.</p>
+
+  <div class="calc" id="goal-form" hidden>
+    <h2>Set your goal</h2>
+    <p class="calc-intro">Choose how long the goal lasts and how many days a week you'll train. Your target is every planned session in that time.</p>
+    <div class="fields">
+      <label>Start date<input id="g-start" type="date"></label>
+      <label>Length<select id="g-weeks">
+        <option value="2">2 weeks</option>
+        <option value="4" selected>1 month (4 weeks)</option>
+        <option value="6">6 weeks</option>
+        <option value="8">2 months (8 weeks)</option>
+        <option value="12">3 months (12 weeks)</option></select></label>
+      <label class="wide">Training plan<select id="g-plan"></select></label>
+      <label>Weight now (kg)<input id="g-w0" type="number" inputmode="decimal" min="35" max="250" step="0.1" placeholder="optional"></label>
+      <label>Target weight (kg)<input id="g-w1" type="number" inputmode="decimal" min="35" max="250" step="0.1" placeholder="optional"></label>
+    </div>
+    <p class="calc-intro" id="g-preview" style="margin-top:12px"></p>
+    <div class="gbtns"><button type="button" class="btn" id="g-save">Start goal</button><button type="button" class="btn ghost" id="g-cancel">Cancel</button></div>
+  </div>
+
+  <div id="progress"></div>
+  <div id="strength"></div>
+  <div id="history"></div>
+  <p class="fine" id="data-note"></p>
+</section>
+<div id="tip" role="tooltip"></div>
