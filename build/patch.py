@@ -6,6 +6,7 @@ src = (here / "index.original.html").read_text(encoding="utf-8")
 css = (here / "progress.css").read_text(encoding="utf-8")
 html = (here / "progress.html").read_text(encoding="utf-8")
 js = (here / "progress.js").read_text(encoding="utf-8")
+sync = (here / "sync.js").read_text(encoding="utf-8")
 
 HELPERS = r'''
 const pad=n=>String(n).padStart(2,"0");
@@ -66,7 +67,7 @@ out = sub(out, 'document.getElementById("tab-nutrition").onclick=()=>showTab("nu
           'document.getElementById("tab-nutrition").onclick=()=>showTab("nutrition");\n'
           'document.getElementById("tab-progress").onclick=()=>showTab("progress");')
 out = sub(out, 'showTab(load("mf-tab","training")==="nutrition"?"nutrition":"training");',
-          js + '\nshowTab(["nutrition","progress"].includes(load("mf-tab",""))?load("mf-tab",""):"training");')
+          js + '\nshowTab(["nutrition","progress"].includes(load("mf-tab",""))?load("mf-tab",""):"training");\n' + sync)
 
 # Calorie target drives the meals: pick the plan + snack combination closest to the target.
 FIT = r'''
@@ -163,6 +164,25 @@ table.lifts tr[data-lift]{cursor:pointer}
 table.lifts tr.sel td{background:color-mix(in srgb,var(--chest) 10%,transparent)}
 </style>''')
 
+# Sync between devices (sync.js): every save is noticed, and a small status pill sits next to the tabs
+out = sub(out, 'function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}',
+          'function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){} syncTouch()}')
+out = sub(out, 'aria-controls="view-progress">Progress</button>\n  </div>',
+          'aria-controls="view-progress">Progress</button>\n  </div>\n  <button type="button" id="sync-pill" class="syncpill" hidden></button>')
+out = sub(out, "</style>", '''.tabs{vertical-align:middle}
+.syncpill{font:inherit;font-size:.8rem;font-weight:600;color:var(--muted);background:none;border:1px solid var(--line);border-radius:999px;padding:4px 11px 4px 9px;margin:6px 0 6px 8px;cursor:pointer;vertical-align:middle;white-space:nowrap}
+.syncpill::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--legs);margin-right:6px}
+.syncpill[data-s="idle"]::before,.syncpill[data-s="busy"]::before{background:var(--shoulders)}
+.syncpill[data-s="offline"]::before{background:var(--rest)}
+.syncpill[data-s="error"]::before,.syncpill[data-s="auth"]::before{background:var(--chest)}
+#sync a{color:var(--back);font-weight:600}
+#sync .steps{margin:0 0 14px;padding-left:22px;font-size:.92rem}
+#sync .steps li{margin-bottom:4px}
+#sync .wlog label{flex:1 1 220px;max-width:300px}
+#sync .wlog input{width:100%}
+.sync-msg{margin:0;font-size:.88rem;color:var(--muted);min-height:1.3em}
+</style>''')
+
 # Fonts stored inside the page so it looks the same offline (fonts.css is made by get_fonts.py)
 fonts = here / "fonts.css"
 if fonts.exists():
@@ -172,3 +192,19 @@ if fonts.exists():
 
 (here / "index.html").write_text(out, encoding="utf-8")
 print("ok", len(out))
+
+# Phone version (docs/ is what GitHub Pages serves): same page, plus what "Add to Home Screen" needs to open offline
+web = sub(out, "<title>", '''<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Workout">
+<meta name="theme-color" content="#E9ECEF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#161A20" media="(prefers-color-scheme: dark)">
+<meta name="robots" content="noindex">
+<title>''')
+web = sub(web, "</script>\n</body>", 'if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});\n</script>\n</body>')
+docs = here.parent / "docs"
+docs.mkdir(exist_ok=True)
+(docs / "index.html").write_text(web, encoding="utf-8")
+print("web ok", len(web))

@@ -1,4 +1,4 @@
-# Rebuilds "Weekly Workout Schedule.exe" from index.original.html + the progress.* files.
+# Rebuilds "Weekly Workout Schedule.exe" and the phone page (docs\index.html) from index.original.html + the other files here.
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
 if (-not (Test-Path "wv2\lib\net462\Microsoft.Web.WebView2.Core.dll")) {
